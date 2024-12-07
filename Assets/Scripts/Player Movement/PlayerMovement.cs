@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Burst.CompilerServices;
 using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
@@ -61,6 +62,7 @@ public class PlayerMovement : MonoBehaviour
 
     public bool sliding;
     public bool wallrunning;
+    public bool hitJumpPad;
     public MoveState state;
 
     [Header("Ground Check")]
@@ -90,6 +92,7 @@ public class PlayerMovement : MonoBehaviour
         {
             rb.drag = groundDrag;
             coyoteTimeCounter = coyoteTime;
+            hitJumpPad = false;
         }
         else
         {
@@ -115,7 +118,7 @@ public class PlayerMovement : MonoBehaviour
         horizontalInput = Input.GetAxisRaw("Horizontal");
         verticalInput = Input.GetAxisRaw("Vertical");
 
-        if (Input.GetKey(jumpKey) && CanJump && coyoteTimeCounter > 0f)
+        if (Input.GetKey(jumpKey) && CanJump && coyoteTimeCounter > 0f && !hitJumpPad)
         {
 
             CanJump = false;
@@ -307,5 +310,14 @@ public class PlayerMovement : MonoBehaviour
 
         moveSpeed = desiredSpeed;
 
+    }
+
+    private void OnCollisionEnter(Collision other)
+    {
+        if (other.gameObject.tag == "jumpPad")
+        {
+            hitJumpPad = true;
+            rb.AddForce(transform.up * jumpForce * 2.75f, ForceMode.Impulse);
+        }
     }
 }
