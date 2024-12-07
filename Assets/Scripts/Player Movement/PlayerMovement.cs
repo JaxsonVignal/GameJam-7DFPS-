@@ -148,7 +148,8 @@ public class PlayerMovement : MonoBehaviour
 
         if (onSlope())
         {
-            rb.AddForce(GetSlopeDirection(moveDirection) * moveSpeed * 10f, ForceMode.Force);
+            Vector3 slopeDir = GetSlopeDirection(moveDirection);
+            rb.velocity = new Vector3(slopeDir.x * moveSpeed, rb.velocity.y, slopeDir.z * moveSpeed);  // Apply movement on slope with modified velocity
         }
 
 
