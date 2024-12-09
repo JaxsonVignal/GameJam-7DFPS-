@@ -318,7 +318,9 @@ public class PlayerMovement : MonoBehaviour
         {
             hitJumpPad = true;
             rb.velocity = new Vector3(rb.velocity.x, 0, rb.velocity.z);
-            rb.AddForce(transform.up * jumpForce * 2.75f, ForceMode.Impulse);
+
+            rb.velocity = new Vector3(rb.velocity.x, 25, rb.velocity.z);
+            
         }
     }
 }
