@@ -57,6 +57,7 @@ public class PlayerMovement : MonoBehaviour
         crouching,
         sliding,
         wallrunning,
+        slippy,
         air
     }
 
@@ -69,13 +70,14 @@ public class PlayerMovement : MonoBehaviour
     public float playerHeight;
     public LayerMask WhatIsGround;
     public bool grounded;
+    bool isSlippyBoy;
     // Start is called before the first frame update
     void Start()
     {
         rb = GetComponent<Rigidbody>();
         rb.freezeRotation = true;
         CanJump = true;
-
+        isSlippyBoy = false;
         startYScale = transform.localScale.y;
     }
 
@@ -244,15 +246,24 @@ public class PlayerMovement : MonoBehaviour
             desiredSpeed = walkSpeed;
         }
 
+        else if(grounded && isSlippyBoy)
+        {
+            desiredSpeed = 40f;
+        }
+        
+
+        
+
         //air state
         else
         {
             state = MoveState.air;
+            isSlippyBoy = false;
         }
 
 
         //acceleration hndling 
-        if (Mathf.Abs(desiredSpeed - lastDesiredSpeed) > 4f && moveSpeed != 0 && state != MoveState.crouching)
+        if (Mathf.Abs(desiredSpeed - lastDesiredSpeed) > 4f && moveSpeed != 0 && state != MoveState.crouching && !isSlippyBoy)
         {
             StopAllCoroutines();
             StartCoroutine(acceleration());
@@ -317,9 +328,23 @@ public class PlayerMovement : MonoBehaviour
         if (other.gameObject.tag == "jumpPad")
         {
             hitJumpPad = true;
-            rb.velocity = new Vector3(rb.velocity.x, 0, rb.velocity.z);
+            rb.velocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
 
-            rb.velocity = new Vector3(rb.velocity.x, 20, rb.velocity.z);
+            rb.velocity = new Vector3(rb.velocity.x, 20f, rb.velocity.z);
+            
+        }
+
+        else if(other.gameObject.tag == "superJumpPad")
+        {
+            hitJumpPad = true;
+            rb.velocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
+            rb.velocity = new Vector3(rb.velocity.x, 40f, rb.velocity.z);
+
+        }
+
+        else if(other.gameObject.tag == "speedyBoy")
+        {
+            isSlippyBoy = true;
             
         }
     }
