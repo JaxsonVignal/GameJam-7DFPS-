@@ -246,14 +246,6 @@ public class PlayerMovement : MonoBehaviour
             desiredSpeed = walkSpeed;
         }
 
-        else if(grounded && isSlippyBoy)
-        {
-            desiredSpeed = 40f;
-        }
-        
-
-        
-
         //air state
         else
         {
@@ -342,10 +334,6 @@ public class PlayerMovement : MonoBehaviour
 
         }
 
-        else if(other.gameObject.tag == "speedyBoy")
-        {
-            isSlippyBoy = true;
-            
-        }
+        
     }
 }
