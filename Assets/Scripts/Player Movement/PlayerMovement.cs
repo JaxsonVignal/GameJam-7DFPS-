@@ -307,7 +307,7 @@ public class PlayerMovement : MonoBehaviour
         {
             hitJumpPad = true;
             rb.velocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
-            rb.velocity = new Vector3(rb.velocity.x, 40f, rb.velocity.z);
+            rb.velocity = new Vector3(rb.velocity.x, 30f, rb.velocity.z);
         }
     }
 }
