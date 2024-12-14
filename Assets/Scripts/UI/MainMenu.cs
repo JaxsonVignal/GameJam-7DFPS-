@@ -19,6 +19,11 @@ public class MainMenu : MonoBehaviour
         SceneManager.LoadScene("HouseRunner1");  // Change to your game's scene index or name
     }
 
+    public void ShowCredits()
+    {
+        // Loads the scene with index 1 (assuming the main game scene is at index 1 in the Build Settings)
+        SceneManager.LoadScene("Credits");  // Change to your game's scene index or name
+    }
     // Method to show options (for now it just prints a message)
     public void ShowOptions()
     {
@@ -28,11 +33,6 @@ public class MainMenu : MonoBehaviour
         SceneManager.LoadScene("Settings Menu");  // Change to your game's scene index or name
     }
 
-    public void ShowCredits()
-    {
-        Debug.Log("Credits Button clicked!");
-    }
-      
 
     // Method to quit the game
     public void QuitGame()
