@@ -16,6 +16,7 @@ public class turretShoot : MonoBehaviour
     private float nextBurstTime = 0f;
     private int bulletsFiredInBurst = 0;
     private bool isBursting = false;
+    PlayerMovement pm;
 
     void Update()
     {
@@ -90,6 +91,8 @@ public class turretShoot : MonoBehaviour
         float distance = Vector3.Distance(firePoint.position, player.position);
         float timeToHit = distance / projectilePrefab.GetComponent<Projectile>().speed;
         Vector3 predictedPosition = player.position + playerVelocity * timeToHit;
+
+        
         predictedPosition.y += .1f;
         return predictedPosition;
     }
