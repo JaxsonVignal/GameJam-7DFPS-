@@ -24,9 +24,8 @@ public class MainMenu : MonoBehaviour
     {
         Debug.Log("Options button clicked!");
 
-        mainMenu.SetActive(false);
-        optionsMenu.SetActive(true);
-        
+        // Loads the scene with index 1 (assuming the main game scene is at index 1 in the Build Settings)
+        SceneManager.LoadScene("Settings Menu");  // Change to your game's scene index or name
     }
 
     public void ShowCredits()

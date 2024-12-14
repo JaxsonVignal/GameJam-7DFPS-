@@ -1,46 +1,67 @@
 using UnityEngine;
-using UnityEngine.SceneManagement;  // To load scenes
-using UnityEngine.UI;  // To interact with UI elements
+using System.Collections.Generic;
+using System.Collections;
+using UnityEngine.Audio;
+using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class MenuSettings : MonoBehaviour
 {
-    
-    public Button mutesoundsButton;
-    public Button backButton;
-    public Slider volumeSlider;
-    public AudioSource audioSource;
-    public GameObject settingsMenu;
-    public GameObject mainMenu;
- 
-   
-   
-    public void muteSounds()
-    {
+    public AudioMixer audioMixer;
+    public TMPro.TMP_Dropdown resolutionDropdown;
+    Resolution[] resolutions;
 
+
+    private void Start()
+    {
+        resolutions = Screen.resolutions;
+
+        resolutionDropdown.ClearOptions();
+
+        List<string> options = new List<string>();
+
+        int currentResolutionIndex = 0;
+        for (int i = 0; i < resolutions.Length; i++)
+        {
+            string option = resolutions[i].width + "x" + resolutions[i].height;
+            options.Add(option);
+
+            if (resolutions[i].width == Screen.currentResolution.width && resolutions[i].height == Screen.currentResolution.height)
+            {
+                currentResolutionIndex = i;
+            }
+        }
+
+        resolutionDropdown.AddOptions(options);
+        resolutionDropdown.value = currentResolutionIndex;
+        resolutionDropdown.RefreshShownValue();
     }
 
-    // Method to show options (for now it just prints a message)
-    public void mainBack()
+    public void MainMenu()
     {
-        mainMenu.SetActive(true);
-        settingsMenu.SetActive(false);
+        // Loads the scene with index 1 (assuming the main game scene is at index 1 in the Build Settings)
+        SceneManager.LoadScene("Main Menu");  // Change to your game's scene index or name
+    }
+    public void SetResolution (int resolutionIndex)
+    {
+       Resolution resolution = resolutions[resolutionIndex];
+        Screen.SetResolution(resolution.width, resolution.height, Screen.fullScreen);
     }
 
-    // Method to quit the game
-    public void setVolume(float volume)
+    public void SetVolume (float volume)
     {
-        audioSource.volume = volume;
+        Debug.Log(volume);
+
+        audioMixer.SetFloat("Volume", volume);
     }
 
-    // Method to initialize the buttons (called when the script starts)
-    void Start()
+    public void SetQuality (int qualityIndex)
     {
-        // Set button listeners if they're assigned in the inspector
-        if (mutesoundsButton != null) mutesoundsButton.onClick.AddListener(muteSounds);
-        if (backButton != null) backButton.onClick.AddListener(mainBack);
+        QualitySettings.SetQualityLevel (qualityIndex);
+    }
 
-        volumeSlider.value = audioSource.volume;
-
-        volumeSlider.onValueChanged.AddListener(setVolume);
+    public void SetFullscreen (bool isFullscreen)
+    {
+        Screen.fullScreen = isFullscreen;
     }
 }
