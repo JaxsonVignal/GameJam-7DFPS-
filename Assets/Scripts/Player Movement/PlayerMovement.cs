@@ -1,13 +1,10 @@
 using System.Collections;
 using System.Collections.Generic;
-using Unity.Burst.CompilerServices;
 using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
 {
-
     [Header("Keybinds")]
-
     public KeyCode jumpKey = KeyCode.Space;
     public KeyCode sprintKey = KeyCode.LeftShift;
     public KeyCode crouchKey = KeyCode.LeftControl;
@@ -33,7 +30,6 @@ public class PlayerMovement : MonoBehaviour
     public float maxSlopeAngle;
     private RaycastHit slopeHit;
 
-
     [Header("Jump Settings")]
     public Transform orientation;
     public float jumpForce;
@@ -57,6 +53,7 @@ public class PlayerMovement : MonoBehaviour
         crouching,
         sliding,
         wallrunning,
+        slippy,
         air
     }
 
@@ -69,25 +66,26 @@ public class PlayerMovement : MonoBehaviour
     public float playerHeight;
     public LayerMask WhatIsGround;
     public bool grounded;
+    bool isSlippyBoy;
+
     // Start is called before the first frame update
     void Start()
     {
         rb = GetComponent<Rigidbody>();
         rb.freezeRotation = true;
         CanJump = true;
-
+        isSlippyBoy = false;
         startYScale = transform.localScale.y;
     }
 
     private void Update()
     {
-
         grounded = Physics.Raycast(transform.position, Vector3.down, playerHeight * 0.5f + 0.2f, WhatIsGround);
         MyInput();
         SpeedControl();
         StateHandler();
 
-        //groundDrag settings 
+        // groundDrag settings
         if (grounded)
         {
             rb.drag = groundDrag;
@@ -102,8 +100,6 @@ public class PlayerMovement : MonoBehaviour
 
         if (state == MoveState.air && rb.velocity.y <= 0)
         {
-
-
             rb.AddForce(Physics.gravity * Mathf.Lerp(1f, gravityMult, 2f));
         }
     }
@@ -120,23 +116,18 @@ public class PlayerMovement : MonoBehaviour
 
         if (Input.GetKey(jumpKey) && CanJump && coyoteTimeCounter > 0f && !hitJumpPad)
         {
-
             CanJump = false;
             Jump();
 
             Invoke(nameof(resetJump), jumpCooldown);
         }
 
-        //start crouch
-
-        //change to  modify height instead 
+        // crouch behavior
         if (Input.GetKeyDown(crouchKey) && grounded)
         {
             transform.localScale = new Vector3(transform.localScale.x, crouchYScale, transform.localScale.z);
             rb.AddForce(Vector3.down * 5f, ForceMode.Impulse);
         }
-
-        //stop crouch 
         if (Input.GetKeyUp(crouchKey))
         {
             transform.localScale = new Vector3(transform.localScale.x, startYScale, transform.localScale.z);
@@ -144,49 +135,58 @@ public class PlayerMovement : MonoBehaviour
     }
 
     private void MovePlayer()
+{
+    moveDirection = orientation.forward * verticalInput + orientation.right * horizontalInput;
+
+    // On Slope
+    if (onSlope())
     {
-        moveDirection = orientation.forward * verticalInput + orientation.right * horizontalInput;
+        // Get the slope's surface normal to determine the sliding direction
+        Vector3 slopeNormal = slopeHit.normal;
 
-        //on slope
+        // Compute the desired direction along the slope's surface (horizontal movement)
+        Vector3 slopeDir = Vector3.ProjectOnPlane(moveDirection, slopeNormal).normalized;
 
-        if (onSlope())
+        // Apply the velocity along the slope direction
+        rb.velocity = new Vector3(slopeDir.x * moveSpeed, rb.velocity.y, slopeDir.z * moveSpeed);
+
+        // If the player is not giving input, set vertical velocity to 0 to prevent "floating" off the slope
+        if (horizontalInput == 0 && verticalInput == 0)
         {
-            Vector3 slopeDir = GetSlopeDirection(moveDirection);
-            rb.velocity = new Vector3(slopeDir.x * moveSpeed, rb.velocity.y, slopeDir.z * moveSpeed);  // Apply movement on slope with modified velocity
+            rb.velocity = new Vector3(rb.velocity.x, 0, rb.velocity.z); // Set the vertical component of velocity to 0
         }
 
-
-        //change to moveplayer
-        //colide and slide for slope detection
+        // Adjust gravity to pull the player down the slope
+        ApplySlopeGravity(slopeNormal);
+    }
+    else
+    {
+        // Apply normal movement when not on a slope
         if (grounded)
+        {
             rb.AddForce(moveDirection.normalized * moveSpeed * 10f, ForceMode.Force);
-
-        else if (!grounded)
+        }
+        else
         {
             rb.AddForce(moveDirection.normalized * moveSpeed * 10f * airMultiplier, ForceMode.Force);
         }
-
     }
+}
 
     private void SpeedControl()
     {
         Vector3 vel = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
-
 
         if (vel.magnitude > moveSpeed)
         {
             Vector3 velLimit = vel.normalized * moveSpeed;
             rb.velocity = new Vector3(velLimit.x, rb.velocity.y, velLimit.z);
         }
-
     }
 
     private void Jump()
     {
-        //look into kin for jumping 
-
         rb.velocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
-
         rb.AddForce(transform.up * jumpForce, ForceMode.Impulse);
         coyoteTimeCounter = 0f;
     }
@@ -198,61 +198,38 @@ public class PlayerMovement : MonoBehaviour
 
     private void StateHandler()
     {
-        //wallrunning state
-
         if (wallrunning)
         {
             state = MoveState.wallrunning;
             desiredSpeed = wallrunSpeed;
         }
-
-
-        // slide state
         else if (sliding)
         {
             state = MoveState.sliding;
-
-            if (onSlope() && rb.velocity.y < 0.1f)
-            {
-                desiredSpeed = slideSpeed;
-            }
-
-            else
-            {
-                desiredSpeed = sprintSpeed;
-            }
+            desiredSpeed = slideSpeed;
         }
-
-        //crouch state
         else if (Input.GetKey(crouchKey))
         {
             state = MoveState.crouching;
             desiredSpeed = crouchSpeed;
         }
-
-        // sprint state (make sure the player cant enter sprint state while crouching, causes acceleration issues)
         else if (grounded && Input.GetKey(sprintKey) && state != MoveState.crouching)
         {
             state = MoveState.sprinting;
             desiredSpeed = sprintSpeed;
         }
-
-        // walking state
         else if (grounded)
         {
             state = MoveState.walking;
             desiredSpeed = walkSpeed;
         }
-
-        //air state
         else
         {
             state = MoveState.air;
+            isSlippyBoy = false;
         }
 
-
-        //acceleration hndling 
-        if (Mathf.Abs(desiredSpeed - lastDesiredSpeed) > 4f && moveSpeed != 0 && state != MoveState.crouching)
+        if (Mathf.Abs(desiredSpeed - lastDesiredSpeed) > 4f && moveSpeed != 0 && state != MoveState.crouching && !isSlippyBoy)
         {
             StopAllCoroutines();
             StartCoroutine(acceleration());
@@ -267,19 +244,27 @@ public class PlayerMovement : MonoBehaviour
 
     public bool onSlope()
     {
-        if (Physics.Raycast(transform.position, Vector3.down, out slopeHit, playerHeight * .5f + .3f))
+        if (Physics.Raycast(transform.position, Vector3.down, out slopeHit, playerHeight * 0.5f + 0.3f, WhatIsGround))
         {
             float angle = Vector3.Angle(Vector3.up, slopeHit.normal);
-
             return angle < maxSlopeAngle && angle != 0;
         }
-
         return false;
     }
 
     public Vector3 GetSlopeDirection(Vector3 direction)
     {
         return Vector3.ProjectOnPlane(direction, slopeHit.normal).normalized;
+    }
+
+    private void ApplySlopeGravity(Vector3 slopeNormal)
+    {
+        if (grounded)
+        {
+            // Gravity should always pull the player down along the slope
+            Vector3 gravityDirection = Vector3.Project(Physics.gravity, slopeNormal);
+            rb.AddForce(gravityDirection, ForceMode.Acceleration);
+        }
     }
 
     private IEnumerator acceleration()
@@ -299,7 +284,6 @@ public class PlayerMovement : MonoBehaviour
 
                 time += Time.deltaTime * speedIncreaseMultiplier * slopeIncreaseMultiplier * slopeAngleIncrease;
             }
-
             else
             {
                 time += Time.deltaTime * speedIncreaseMultiplier;
@@ -309,7 +293,6 @@ public class PlayerMovement : MonoBehaviour
         }
 
         moveSpeed = desiredSpeed;
-
     }
 
     private void OnCollisionEnter(Collision other)
@@ -317,10 +300,15 @@ public class PlayerMovement : MonoBehaviour
         if (other.gameObject.tag == "jumpPad")
         {
             hitJumpPad = true;
-            rb.velocity = new Vector3(rb.velocity.x, 0, rb.velocity.z);
-
-            rb.velocity = new Vector3(rb.velocity.x, 20, rb.velocity.z);
-            
+            rb.velocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
+            rb.velocity = new Vector3(rb.velocity.x, 20f, rb.velocity.z);
+        }
+        else if (other.gameObject.tag == "superJumpPad")
+        {
+            hitJumpPad = true;
+            rb.velocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
+            rb.velocity = new Vector3(rb.velocity.x, 30f, rb.velocity.z);
         }
     }
 }
+
