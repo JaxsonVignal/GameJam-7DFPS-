@@ -6,9 +6,18 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
+    path: Assets/Scenes/MainMenu.unity
+    guid: 59295da0627fc1a4a968272f739d5f6b
+  - enabled: 1
     path: Assets/Scenes/HouseRunner1.unity
     guid: 58dd7ed1df22ba445aa121b8861a38fe
   - enabled: 1
+    path: Assets/Scenes/settingsMenu.unity
+    guid: d4b8605093119dc459a66a4140c9cbd8
+  - enabled: 1
     path: Assets/Scenes/endscreen.unity
     guid: c137b70cfc30c0f4e9f51d11bf7f75a5
+  - enabled: 1
+    path: Assets/Scenes/tut.unity
+    guid: a3b7e25228135d540b2512e99644bc83
   m_configObjects: {}
