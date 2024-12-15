@@ -90,10 +90,18 @@ public class turretShoot : MonoBehaviour
         Vector3 playerVelocity = playerRb.velocity;
         float distance = Vector3.Distance(firePoint.position, player.position);
         float timeToHit = distance / projectilePrefab.GetComponent<Projectile>().speed;
-        Vector3 predictedPosition = player.position + playerVelocity * timeToHit;
 
-        
-        predictedPosition.y += .1f;
+        // Predict the X and Z position independently
+        Vector3 predictedPosition = player.position;
+        predictedPosition.x += playerVelocity.x * timeToHit; // X component prediction
+        predictedPosition.z += playerVelocity.z * timeToHit; // Z component prediction
+
+        // Predict the Y position based on velocity in the Y direction (jumping or falling)
+        predictedPosition.y += (playerVelocity.y * timeToHit) - 1f ;
+
+        // Optionally adjust Y prediction to prevent issues like "floating" due to gravity
+        predictedPosition.y = Mathf.Max(predictedPosition.y, player.position.y);
+
         return predictedPosition;
     }
 }
