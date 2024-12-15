@@ -303,6 +303,12 @@ public class PlayerMovement : MonoBehaviour
             rb.velocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
             rb.velocity = new Vector3(rb.velocity.x, 20f, rb.velocity.z);
         }
+        else if (other.gameObject.tag == "ballJumpPad")
+        {
+            hitJumpPad = true;
+            rb.velocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
+            rb.velocity = new Vector3(rb.velocity.x, 22f, rb.velocity.z);
+        }
         else if (other.gameObject.tag == "superJumpPad")
         {
             hitJumpPad = true;

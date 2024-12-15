@@ -7,6 +7,10 @@ TagManager:
   - jumpPad
   - superJumpPad
   - speedyBoy
+  - Bullet
+  - Gun
+  - ballJumpPad
+  - killBox
   layers:
   - Default
   - TransparentFX
