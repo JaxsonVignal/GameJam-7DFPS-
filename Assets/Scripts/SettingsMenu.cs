@@ -42,6 +42,12 @@ public class MenuSettings : MonoBehaviour
         resolutionDropdown.RefreshShownValue();
     }
 
+    public void Update()
+    {
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+    }
+
     // Function to load the main menu scene
     public void MainMenu()
     {

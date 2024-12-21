@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class PlayerMovement : MonoBehaviour
 {
@@ -100,8 +101,10 @@ public class PlayerMovement : MonoBehaviour
 
         if (state == MoveState.air && rb.velocity.y <= 0)
         {
-            rb.AddForce(Physics.gravity * Mathf.Lerp(1f, gravityMult, 2f));
+            rb.AddForce(Physics.gravity * Mathf.Lerp(1f, gravityMult, 2f), ForceMode.Acceleration);
         }
+
+        exitToMain();
     }
 
     private void FixedUpdate()
@@ -135,43 +138,37 @@ public class PlayerMovement : MonoBehaviour
     }
 
     private void MovePlayer()
-{
-    moveDirection = orientation.forward * verticalInput + orientation.right * horizontalInput;
-
-    // On Slope
-    if (onSlope())
     {
-        // Get the slope's surface normal to determine the sliding direction
-        Vector3 slopeNormal = slopeHit.normal;
+        moveDirection = orientation.forward * verticalInput + orientation.right * horizontalInput;
 
-        // Compute the desired direction along the slope's surface (horizontal movement)
-        Vector3 slopeDir = Vector3.ProjectOnPlane(moveDirection, slopeNormal).normalized;
-
-        // Apply the velocity along the slope direction
-        rb.velocity = new Vector3(slopeDir.x * moveSpeed, rb.velocity.y, slopeDir.z * moveSpeed);
-
-        // If the player is not giving input, set vertical velocity to 0 to prevent "floating" off the slope
-        if (horizontalInput == 0 && verticalInput == 0)
+        // On Slope
+        if (onSlope())
         {
-            rb.velocity = new Vector3(rb.velocity.x, 0, rb.velocity.z); // Set the vertical component of velocity to 0
-        }
+            // Get the slope's surface normal to determine the sliding direction
+            Vector3 slopeNormal = slopeHit.normal;
 
-        // Adjust gravity to pull the player down the slope
-        ApplySlopeGravity(slopeNormal);
-    }
-    else
-    {
-        // Apply normal movement when not on a slope
-        if (grounded)
-        {
-            rb.AddForce(moveDirection.normalized * moveSpeed * 10f, ForceMode.Force);
+            // Compute the desired direction along the slope's surface (horizontal movement)
+            Vector3 slopeDir = Vector3.ProjectOnPlane(moveDirection, slopeNormal).normalized;
+
+            // Apply the velocity along the slope direction
+            rb.velocity = new Vector3(slopeDir.x * moveSpeed, rb.velocity.y, slopeDir.z * moveSpeed);
+
+            // Apply stronger gravity to pull the player down the slope
+            ApplySlopeGravity(slopeNormal);
         }
         else
         {
-            rb.AddForce(moveDirection.normalized * moveSpeed * 10f * airMultiplier, ForceMode.Force);
+            // Apply normal movement when not on a slope
+            if (grounded)
+            {
+                rb.AddForce(moveDirection.normalized * moveSpeed * 10f, ForceMode.Force);
+            }
+            else
+            {
+                rb.AddForce(moveDirection.normalized * moveSpeed * 10f * airMultiplier, ForceMode.Force);
+            }
         }
     }
-}
 
     private void SpeedControl()
     {
@@ -229,7 +226,7 @@ public class PlayerMovement : MonoBehaviour
             isSlippyBoy = false;
         }
 
-        if (Mathf.Abs(desiredSpeed - lastDesiredSpeed) > 4f && moveSpeed != 0 && state != MoveState.crouching && !isSlippyBoy)
+        if (Mathf.Abs(desiredSpeed - lastDesiredSpeed) > 20f && moveSpeed != 0 && state != MoveState.crouching && !isSlippyBoy)
         {
             StopAllCoroutines();
             StartCoroutine(acceleration());
@@ -261,9 +258,15 @@ public class PlayerMovement : MonoBehaviour
     {
         if (grounded)
         {
-            // Gravity should always pull the player down along the slope
+            // Increase gravity force along the slope's normal
             Vector3 gravityDirection = Vector3.Project(Physics.gravity, slopeNormal);
-            rb.AddForce(gravityDirection, ForceMode.Acceleration);
+            rb.AddForce(gravityDirection * 4.5f, ForceMode.Acceleration); // Apply stronger gravity
+
+            // Prevent excessive vertical velocity that could cause hopping or floating
+            if (rb.velocity.y > 0f)
+            {
+                rb.velocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z); // Reset vertical velocity to 0
+            }
         }
     }
 
@@ -314,6 +317,14 @@ public class PlayerMovement : MonoBehaviour
             hitJumpPad = true;
             rb.velocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
             rb.velocity = new Vector3(rb.velocity.x, 30f, rb.velocity.z);
+        }
+    }
+
+    public void exitToMain()
+    {
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            SceneManager.LoadScene("MainMenu");
         }
     }
 }
