@@ -11,9 +11,6 @@ public class EnemyPatrolAndExplode : MonoBehaviour
     public float impulseForce = 500f;  // Impulse force applied to the player
     public float explosionRadius = 5f;  // Radius of the explosion to apply force to nearby objects
 
-    public AudioClip explosionSound;  // Explosion sound clip (assign in inspector)
-    private AudioSource audioSource;  // Reference to the AudioSource component
-
     public ParticleSystem explosionEffect;  // Explosion particle effect (assign in inspector)
 
     private Transform player;   // Reference to the player
@@ -32,15 +29,6 @@ public class EnemyPatrolAndExplode : MonoBehaviour
 
         // Find the player by tag
         player = GameObject.FindGameObjectWithTag("Player").transform;
-
-        // Set up the AudioSource component
-        audioSource = GetComponent<AudioSource>();
-
-        // Check if the AudioSource is attached and valid
-        if (audioSource == null)
-        {
-            Debug.LogError("AudioSource component is missing from the enemy!");
-        }
 
         // Start patrolling
         StartCoroutine(Patrol());
@@ -116,17 +104,6 @@ public class EnemyPatrolAndExplode : MonoBehaviour
 
         isExploded = true;
 
-        // Play the explosion sound (if there is an AudioSource and explosion sound)
-        if (audioSource != null && explosionSound != null)
-        {
-            audioSource.PlayOneShot(explosionSound); // Play explosion sound
-            Debug.Log("Explosion sound played!");
-        }
-        else
-        {
-            Debug.LogWarning("Explosion sound or AudioSource is missing!");
-        }
-
         // Play the explosion particle effect (if assigned)
         if (explosionEffect != null)
         {
@@ -144,6 +121,7 @@ public class EnemyPatrolAndExplode : MonoBehaviour
 
     void OnDestroy()
     {
+        
         // Apply the explosion force to objects tagged with "BlowBack" when the enemy is destroyed
         Collider[] blowBackObjects = Physics.OverlapSphere(transform.position, explosionRadius);
         foreach (Collider col in blowBackObjects)

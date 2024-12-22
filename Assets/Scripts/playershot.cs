@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class PistolShoot : MonoBehaviour
@@ -16,12 +15,15 @@ public class PistolShoot : MonoBehaviour
     private float nextTimeToFire = 0f;             // Track the next time to shoot
 
     public int maxShots = 10;                      // Max shots before reloading
-    public int shotCount = 0;                      // Current shot count
+    public int shotCount;                          // Current shot count, starts from maxShots and counts down
     public float reloadTime = 2f;                  // Time it takes to reload (in seconds)
     public bool isReloading = false;              // Flag to check if the gun is reloading
 
     void Start()
     {
+        // Initialize the shot count to maxShots at the start
+        shotCount = maxShots;
+
         // Get the AudioSource component attached to the GameObject
         audioSource = GetComponent<AudioSource>();
     }
@@ -35,18 +37,24 @@ public class PistolShoot : MonoBehaviour
         }
 
         // Only allow shooting if enough time has passed since the last shot
-        if (Input.GetButtonDown("Fire1") && Time.time >= nextTimeToFire)
+        if (Input.GetButtonDown("Fire1") && Time.time >= nextTimeToFire && shotCount > 0)
         {
             Shoot();
             // Set the next time the player can shoot based on fireRate
             nextTimeToFire = Time.time + (1f / fireRate);  // Update the next time to fire based on fire rate
 
-            // Increment shot count and check if reload is needed
-            shotCount++;
-            if (shotCount >= maxShots)
+            // Decrease shot count and check if reload is needed
+            shotCount--;
+            if (shotCount <= 0)
             {
-                StartCoroutine(Reload());
+                StartCoroutine(Reload());  // Start reloading when shot count reaches 0
             }
+        }
+
+        // Allow the player to manually trigger a reload with the "R" key
+        if (Input.GetKeyDown(KeyCode.R) && shotCount < maxShots && !isReloading)
+        {
+            StartCoroutine(Reload());  // Start the reload process when the "R" key is pressed
         }
     }
 
@@ -118,7 +126,7 @@ public class PistolShoot : MonoBehaviour
         // Wait for the remaining reload time
         yield return new WaitForSeconds(reloadTime * 0.5f);  // Complete the reload
 
-        shotCount = 0;  // Reset the shot count after reload
+        shotCount = maxShots;  // Reset the shot count after reload
         isReloading = false;  // Set reloading to false, allowing shooting again
         Debug.Log("Reload Complete");
     }
