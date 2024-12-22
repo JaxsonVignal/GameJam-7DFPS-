@@ -9,7 +9,7 @@ public class RotateDuringReload : MonoBehaviour
     public float loweredAmount = 3f;  // How much to lower the gun (adjust this based on how far you want to lower it)
 
     private Vector3 originalPosition;  // To store the original position of the gun
-    private bool isReloading = false;  // To track if the reload state is active
+    public bool isReloading = false;  // To track if the reload state is active
 
     void Start()
     {

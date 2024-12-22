@@ -1,28 +1,33 @@
 using UnityEngine;
-using TMPro;  // Make sure to include the TextMesh Pro namespace
+using TMPro;
 
 public class EndScreenScript : MonoBehaviour
 {
-    public TextMeshProUGUI timeText;  // Reference to the TextMesh Pro Text component that will display the time
+    public TextMeshProUGUI timeText;  // Reference to display the time
+    private TimeManager timeManager;
 
-    void Start()
+    private void Start()
     {
-        // Load the saved time from PlayerPrefs and display it
-        float timeSpent = PlayerPrefs.GetFloat("TimeSpent", 0f);  // Default value is 0 if no time is saved
-        timeText.text = "Time: " + timeSpent.ToString("F2") + " seconds";  // Show time with 2 decimal places
+        timeManager = FindObjectOfType<TimeManager>();  // Find the TimeManager script
+
+        // Load the player's time from PlayerPrefs and display it
+        float timeSpent = PlayerPrefs.GetFloat("TimeSpent", 0f);
+        timeText.text = $"Time: {timeSpent:F2} seconds";  // Show time with 2 decimal places
+
+        // Save the time to the TimeManager
+        timeManager.SaveTime(timeSpent);
     }
 
     public void RestartLevel()
     {
-        // Restart the current level (replace "CurrentSceneName" with the actual scene name)
+        // Restart the current level
         string currentSceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
         UnityEngine.SceneManagement.SceneManager.LoadScene(currentSceneName);
     }
 
     public void GoToMainMenu()
     {
-        // Load the main menu scene (replace "MainMenu" with the actual scene name)
+        // Go to the main menu scene
         UnityEngine.SceneManagement.SceneManager.LoadScene("MainMenu");
     }
 }
-

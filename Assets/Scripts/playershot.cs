@@ -46,7 +46,6 @@ public class PistolShoot : MonoBehaviour
             if (shotCount >= maxShots)
             {
                 StartCoroutine(Reload());
-                // Optionally play a reload sound here, but it will be handled in the Reload coroutine
             }
         }
     }
@@ -69,6 +68,14 @@ public class PistolShoot : MonoBehaviour
             {
                 EnemyDamage enemy = hit.collider.GetComponent<EnemyDamage>();  // Get the EnemyDamage component
                 enemy.TakeDamage(damage);  // Apply damage to the enemy
+                Debug.Log("Hit enemy: " + hit.collider.name);
+            }
+            // Check if we hit an object with the RoboEnemy script
+            else if (hit.collider.GetComponent<RoboDeath>())
+            {
+                RoboDeath roboDeath = hit.collider.GetComponent<RoboDeath>();  // Get the RoboDeath component
+                roboDeath.TakeDamage(damage);  // Apply damage to the RoboEnemy
+                Debug.Log("Hit RoboEnemy: " + hit.collider.name);
             }
 
             Debug.Log("Hit: " + hit.collider.name);
