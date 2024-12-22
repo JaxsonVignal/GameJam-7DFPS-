@@ -27,13 +27,13 @@ public class PathEnemy : MonoBehaviour
     private bool isWaiting = false;
     private bool isShooting = false;
     private float nextFireTime = 0f;
-
+    private RoboDeath rd;
     void Start()
     {
 
         navMeshAgent = GetComponent<NavMeshAgent>();
         animator = GetComponent<Animator>();
-
+        rd = GetComponent<RoboDeath>();
 
         currentPatrolPoint = patrolPoint1;
 
@@ -45,16 +45,25 @@ public class PathEnemy : MonoBehaviour
 
     void Update()
     {
-        if (CanSeePlayer())
+        if (rd.health > 0)
         {
-            StopPatrolling();
-            RotateTowardsPlayer();
-            StartShooting();
+
+            if (CanSeePlayer())
+            {
+                StopPatrolling();
+                RotateTowardsPlayer();
+                StartShooting();
+            }
+            else
+            {
+                StopShooting();
+                Patrol();
+            }
         }
+
         else
         {
-            StopShooting();
-            Patrol();
+            Destroy(gameObject);
         }
     }
 
