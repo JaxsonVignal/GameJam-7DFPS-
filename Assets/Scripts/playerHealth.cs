@@ -7,12 +7,20 @@ public class PlayerHealthWithUI : MonoBehaviour
     public float health = 30;  // Initial health value
     public float damageAmount = 10;  // Damage to be taken on bullet collision
     public TextMeshProUGUI healthText;  // Reference to the TextMeshPro UI element
+    public AudioSource damageAudioSource;  // Reference to the AudioSource component
+    public AudioClip damageSound;  // Reference to the damage sound effect
 
     void Start()
     {
         // Initialize player health at the start
         health = 30;
         UpdateHealthUI();  // Update the UI text at the start
+
+        // Ensure the AudioSource is set to play the damage sound
+        if (damageAudioSource != null)
+        {
+            damageAudioSource.clip = damageSound;
+        }
     }
 
     private void Update()
@@ -33,6 +41,12 @@ public class PlayerHealthWithUI : MonoBehaviour
             // Decrease health by the damage amount
             health -= damageAmount;
 
+            // Play the damage sound
+            if (damageAudioSource != null && damageSound != null)
+            {
+                damageAudioSource.Play();  // Play the damage sound
+            }
+
             // If health reaches 0, reload the scene
             if (health <= 0)
             {
@@ -50,5 +64,3 @@ public class PlayerHealthWithUI : MonoBehaviour
         healthText.text = "Health: " + health.ToString();  // Set the text to display current health
     }
 }
-
-
