@@ -4,8 +4,8 @@ using TMPro;  // Import TextMeshPro namespace
 
 public class PlayerHealthWithUI : MonoBehaviour
 {
-    public int health = 30;  // Initial health value
-    public int damageAmount = 10;  // Damage to be taken on bullet collision
+    public float health = 30;  // Initial health value
+    public float damageAmount = 10;  // Damage to be taken on bullet collision
     public TextMeshProUGUI healthText;  // Reference to the TextMeshPro UI element
 
     void Start()

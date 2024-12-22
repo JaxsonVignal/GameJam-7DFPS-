@@ -11,6 +11,8 @@ TagManager:
   - Gun
   - ballJumpPad
   - killBox
+  - expoDrone
+  - blowBack
   layers:
   - Default
   - TransparentFX
