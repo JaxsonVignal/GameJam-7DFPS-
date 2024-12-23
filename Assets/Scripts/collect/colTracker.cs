@@ -40,4 +40,11 @@ public class ItemTracker : MonoBehaviour
             itemCountText.text = "Golden Asad's: " + collectedItemCount.ToString() + "/5";
         }
     }
+
+    // Call this method to save the collected item count to PlayerPrefs
+    public void SaveCollectedItemCount()
+    {
+        PlayerPrefs.SetInt("CollectedItems", collectedItemCount);
+        PlayerPrefs.Save();
+    }
 }

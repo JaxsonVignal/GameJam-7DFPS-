@@ -6,6 +6,7 @@ public class LevelEndTrigger : MonoBehaviour
     // This is the name of the scene to load when the player collides with the trigger
     public string nextSceneName;
     public DroneTracker dt;
+    public ItemTracker itemTracker;  // Reference to ItemTracker script
 
     // Track the time spent in the level
     private float timeSpent = 0f;
@@ -21,6 +22,14 @@ public class LevelEndTrigger : MonoBehaviour
         {
             // Stop the timer when level is completed
             levelCompleted = true;
+
+            // Check if the item count is 5 and subtract 5 seconds from the time
+            if (itemTracker.collectedItemCount == 5)
+            {
+                Debug.Log("Time subtracted!");
+                timeSpent -= 5f;  // Subtract 5 seconds from the time
+                if (timeSpent < 0) timeSpent = 0;  // Ensure the time doesn't go negative
+            }
 
             // Save the time the player took to finish the level
             PlayerPrefs.SetFloat("TimeSpent", timeSpent);
