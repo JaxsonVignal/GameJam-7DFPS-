@@ -94,7 +94,7 @@ public class EnemyPatrolAndExplode : MonoBehaviour
         if (collision.gameObject.CompareTag("Player"))
         {
             TriggerExplosion();
-            PlayerHealth.health -= 20f;
+            PlayerHealth.health -= 10f;
         }
     }
 
